@@ -19,15 +19,9 @@ You can add a draggable bottom sheet to your app, like the one in the Youtube ap
 
 Showing and hiding sheets is not yet supported.
 
-<video controls width="250">
-
-  <source src="https://github.com/user-attachments/assets/1d346263-1f4c-4d5d-bf47-6f76478422aa" type="video/mp4" />
-
-</video>
-
+![shrink_sheet_layout demo](https://github.com/user-attachments/assets/73fc2238-fae6-48c4-b9e0-34c289be8762)
 
 ## Getting started
-
 
 Feel free to add to your existing Flutter apps.
 No preparation is required other than a Flutter app project.
