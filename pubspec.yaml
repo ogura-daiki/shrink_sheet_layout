@@ -1,7 +1,8 @@
 name: shrink_sheet_layout
-description: "A new Flutter package project."
+description: "This is a draggable bottom sheet plugin, like the one in the app version of Youtube."
 version: 0.0.1
-homepage:
+homepage: https://github.com/ogura-daiki/shrink_sheet_layout
+
 
 environment:
   sdk: '>=3.3.4 <4.0.0'
