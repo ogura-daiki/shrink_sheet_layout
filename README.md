@@ -19,10 +19,11 @@ You can add a draggable bottom sheet to your app, like the one in the Youtube ap
 
 Showing and hiding sheets is not yet supported.
 
+<video controls width="250">
 
+  <source src="https://github.com/user-attachments/assets/1d346263-1f4c-4d5d-bf47-6f76478422aa" type="video/mp4" />
 
-https://github.com/user-attachments/assets/1d346263-1f4c-4d5d-bf47-6f76478422aa
-
+</video>
 
 
 ## Getting started
