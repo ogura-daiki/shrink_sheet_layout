@@ -39,19 +39,15 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    controller1 = ShrinkSheetController(
-      controller: AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 500),
-        value: 1,
-      ),
+    controller1 = ShrinkSheetController.simple(
+      vsync: this,
+      shrinkDuration: const Duration(milliseconds: 500),
+      fadeInDuration: const Duration(milliseconds: 300),
     );
-    controller2 = ShrinkSheetController(
-      controller: AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 1500),
-        value: 0,
-      ),
+    controller2 = ShrinkSheetController.simple(
+      vsync: this,
+      shrinkDuration: const Duration(milliseconds: 1000),
+      fadeInDuration: const Duration(milliseconds: 100),
     );
   }
 
@@ -87,7 +83,15 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           ),
           sheetContent: Container(
             color: Colors.amber,
-            child: const Center(child: Text("text")),
+            child: Center(
+              child: TextButton(
+                onPressed: () {
+                  controller2.fadeOut();
+                  controller2.shrink();
+                },
+                child: const Text("body"),
+              ),
+            ),
           ),
           body: TextButton(
             onPressed: () {
@@ -101,6 +105,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           onPressed: () {
             log("test");
             controller1.expand();
+            controller2.fadeIn();
           },
           child: const Text("body"),
         ),

@@ -4,87 +4,8 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-
-class ShrinkSheetController extends Listenable {
-  final AnimationController _controller;
-  late Animation<double> _animation;
-
-  double get value {
-    return _animation.value;
-  }
-
-  set value(double v) {
-    _controller.value = v;
-  }
-
-  ShrinkSheetController({required AnimationController controller})
-      : _controller = controller,
-        _animation = controller;
-
-  void stop() {
-    _controller.stop();
-    _controller.value = _animation.value;
-    _animation = _controller;
-  }
-
-  Future<void> shrink() async {
-    final tween = Tween<double>(
-      begin: 0,
-      end: _controller.value,
-    );
-    _animation = _controller
-        .drive(
-          CurveTween(
-            curve: Interval(
-              tween.begin!,
-              tween.end!,
-              curve: Curves.easeInCirc,
-            ),
-          ),
-        )
-        .drive(tween);
-    await _controller.reverse();
-    _animation = _controller;
-  }
-
-  Future<void> expand() async {
-    final tween = Tween<double>(
-      begin: _controller.value,
-      end: 1,
-    );
-    _animation = _controller
-        .drive(
-          CurveTween(
-            curve: Interval(
-              tween.begin!,
-              tween.end!,
-              curve: Curves.easeOutCirc,
-            ),
-          ),
-        )
-        .drive(tween);
-    await _controller.forward();
-    _animation = _controller;
-  }
-
-  bool get expanded {
-    return value == 1;
-  }
-
-  bool get shrunk {
-    return value == 0;
-  }
-
-  @override
-  void addListener(VoidCallback listener) {
-    _controller.addListener(listener);
-  }
-
-  @override
-  void removeListener(VoidCallback listener) {
-    _controller.removeListener(listener);
-  }
-}
+import 'package:shrink_sheet_layout/shrink_sheet_controller.dart';
+export 'package:shrink_sheet_layout/shrink_sheet_controller.dart';
 
 class ShrinkSheetLayout extends StatelessWidget {
   final double thumbHeight;
@@ -92,16 +13,15 @@ class ShrinkSheetLayout extends StatelessWidget {
   final Widget sheetContent;
   final Widget body;
   final bool resizeContent;
-  final ShrinkSheetController animation;
   final EdgeInsets fromPadding;
   final EdgeInsets toPadding;
   final double shrinkHeight;
   final bool resizeThumb;
   final double elevation;
+  final ShrinkSheetController animation;
 
   const ShrinkSheetLayout({
     super.key,
-    required this.animation,
     required this.thumbHeight,
     required this.thumb,
     required this.sheetContent,
@@ -112,24 +32,30 @@ class ShrinkSheetLayout extends StatelessWidget {
     double? minHeight,
     this.resizeThumb = false,
     this.elevation = 16,
+    required this.animation,
   }) : shrinkHeight = minHeight ?? thumbHeight;
+
+  double get _shrinkValue => animation.shrinkAnimation.value;
+  double get _fadeValue => animation.fadeInAnimation.value;
 
   @override
   Widget build(BuildContext context) {
+    //直前のドラッグの移動量保管用
+    double beforeDelta = 0;
     return LayoutBuilder(builder: (context, constraints) {
       final collapseHeight = constraints.maxHeight - shrinkHeight;
       return SizedBox(
         height: constraints.maxHeight,
         width: constraints.maxWidth,
         child: AnimatedBuilder(
-          animation: animation,
+          animation: animation.shrinkAnimation,
           builder: (context, child) {
             final sheetHeight = max(
               shrinkHeight,
               lerpDouble(
                 shrinkHeight,
                 constraints.maxHeight - fromPadding.vertical,
-                animation.value,
+                _shrinkValue,
               )!,
             );
             return Stack(
@@ -137,15 +63,19 @@ class ShrinkSheetLayout extends StatelessWidget {
               clipBehavior: Clip.antiAliasWithSaveLayer,
               children: [
                 body,
-                IgnorePointer(
-                  ignoring: animation.shrunk,
-                  child: Container(
-                    width: constraints.maxWidth,
-                    height: constraints.maxHeight,
-                    color: Color.lerp(
-                      const Color(0x00000000),
-                      const Color(0x99000000),
-                      animation.value,
+                //バックドロップの制御
+                Opacity(
+                  opacity: _fadeValue * _shrinkValue,
+                  child: IgnorePointer(
+                    ignoring: _fadeValue < 1 || animation.shrunk,
+                    child: Container(
+                      width: constraints.maxWidth,
+                      height: constraints.maxHeight,
+                      color: Color.lerp(
+                        const Color(0x00000000),
+                        const Color(0x99000000),
+                        _shrinkValue,
+                      ),
                     ),
                   ),
                 ),
@@ -156,63 +86,87 @@ class ShrinkSheetLayout extends StatelessWidget {
                       constraints.maxHeight - shrinkHeight - toPadding.bottom,
                     ),
                     fromPadding.top,
-                    animation.value,
+                    _shrinkValue,
                   ),
                   height: sheetHeight,
                   left: lerpDouble(
                     toPadding.left,
                     fromPadding.left,
-                    animation.value,
+                    _shrinkValue,
                   ),
                   right: lerpDouble(
                     toPadding.right,
                     fromPadding.right,
-                    animation.value,
+                    _shrinkValue,
                   ),
-                  child: Material(
-                    elevation: elevation,
-                    child: Stack(
-                      fit: StackFit.passthrough,
-                      clipBehavior: Clip.antiAliasWithSaveLayer,
-                      children: [
-                        Positioned(
-                          top: thumbHeight,
-                          height: resizeContent
-                              ? sheetHeight - thumbHeight
-                              : constraints.maxHeight -
-                                  thumbHeight -
-                                  fromPadding.vertical,
-                          left: 0,
-                          right: 0,
-                          child: sheetContent,
+                  child: AnimatedBuilder(
+                    animation: animation.fadeInAnimation,
+                    builder: (context, child) {
+                      return IgnorePointer(
+                        ignoring: !(_fadeValue > 0.8),
+                        child: Opacity(
+                          opacity: _fadeValue,
+                          child: child!,
                         ),
-                        Positioned(
-                          top: 0,
-                          height: !resizeThumb
-                              ? thumbHeight
-                              : min(thumbHeight, sheetHeight),
-                          left: 0,
-                          right: 0,
-                          child: GestureDetector(
-                            onVerticalDragStart: (details) {},
-                            onVerticalDragUpdate: (details) {
-                              var per = animation.value -
-                                  details.delta.dy / collapseHeight;
-                              per = per.clamp(0, 1);
-                              animation.value = per;
-                            },
-                            onVerticalDragEnd: (details) async {
-                              if (details.velocity.pixelsPerSecond.direction >
-                                  0) {
-                                animation.shrink();
-                              } else {
-                                animation.expand();
-                              }
-                            },
-                            child: thumb,
+                      );
+                    },
+                    child: Material(
+                      elevation: elevation,
+                      child: Stack(
+                        fit: StackFit.passthrough,
+                        clipBehavior: Clip.antiAliasWithSaveLayer,
+                        children: [
+                          Positioned(
+                            top: thumbHeight,
+                            height: resizeContent
+                                ? sheetHeight - thumbHeight
+                                : constraints.maxHeight -
+                                    thumbHeight -
+                                    fromPadding.vertical,
+                            left: 0,
+                            right: 0,
+                            child: sheetContent,
                           ),
-                        ),
-                      ],
+                          Positioned(
+                            top: 0,
+                            height: !resizeThumb
+                                ? thumbHeight
+                                : min(thumbHeight, sheetHeight),
+                            left: 0,
+                            right: 0,
+                            child: GestureDetector(
+                              onVerticalDragStart: (details) {
+                                beforeDelta = 0;
+                                animation.shrinkAnimation.stop();
+                              },
+                              onVerticalDragUpdate: (details) {
+                                beforeDelta = details.delta.dy;
+                                var per =
+                                    _shrinkValue - beforeDelta / collapseHeight;
+                                per = per.clamp(0, 1);
+                                animation.shrinkAnimation.baseValue = per;
+                              },
+                              onVerticalDragEnd: (details) {
+                                bool moved = beforeDelta.abs() > 2;
+                                if (!moved) {
+                                  if (_shrinkValue < 0.5) {
+                                    animation.shrink();
+                                  } else {
+                                    animation.expand();
+                                  }
+                                  return;
+                                }
+                                if (beforeDelta > 0) {
+                                  animation.shrink();
+                                } else {
+                                  animation.expand();
+                                }
+                              },
+                              child: thumb,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
