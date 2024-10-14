@@ -64,18 +64,24 @@ class ShrinkSheetLayout extends StatelessWidget {
               children: [
                 body,
                 //バックドロップの制御
-                Opacity(
-                  opacity: _fadeValue * _shrinkValue,
-                  child: IgnorePointer(
-                    ignoring: _fadeValue < 1 || animation.shrunk,
-                    child: Container(
-                      width: constraints.maxWidth,
-                      height: constraints.maxHeight,
-                      color: Color.lerp(
-                        const Color(0x00000000),
-                        const Color(0x99000000),
-                        _shrinkValue,
+                AnimatedBuilder(
+                  animation: animation.fadeInAnimation,
+                  builder: (context, child) {
+                    return Opacity(
+                      opacity: _fadeValue * _shrinkValue,
+                      child: IgnorePointer(
+                        ignoring: _fadeValue < 1 || animation.shrunk,
+                        child: child!,
                       ),
+                    );
+                  },
+                  child: Container(
+                    width: constraints.maxWidth,
+                    height: constraints.maxHeight,
+                    color: Color.lerp(
+                      const Color(0x00000000),
+                      const Color(0x99000000),
+                      _shrinkValue,
                     ),
                   ),
                 ),

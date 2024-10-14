@@ -53,9 +53,20 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    const animDuration = Duration(milliseconds: 500);
+    final anim1 = ShrinkSheetController.simple(
+      vsync: this,
+      shrinkDuration: animDuration,
+      fadeInDuration: animDuration,
+    );
+    final anim2 = ShrinkSheetController.simple(
+      vsync: this,
+      shrinkDuration: animDuration,
+      fadeInDuration: animDuration,
+    );
     return Scaffold(
       body: ShrinkSheetLayout(
-        animation: controller1,
+        animation: anim1,
         minHeight: 60,
         thumbHeight: 200,
         resizeThumb: true,
@@ -73,30 +84,30 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         ),
         resizeContent: false,
         sheetContent: ShrinkSheetLayout(
-          animation: controller2,
+          animation: anim2,
           thumbHeight: 60,
           fromPadding: const EdgeInsets.only(top: 2),
           toPadding: const EdgeInsets.all(8),
           thumb: Container(
             color: Colors.grey,
-            child: const Center(child: Text("bar2")),
-          ),
-          sheetContent: Container(
-            color: Colors.amber,
             child: Center(
               child: TextButton(
                 onPressed: () {
-                  controller2.fadeOut();
-                  controller2.shrink();
+                  anim2.fadeOut();
                 },
-                child: const Text("body"),
+                child: Text("bar2"),
               ),
             ),
+          ),
+          sheetContent: Container(
+            color: Colors.amber,
+            child: const Center(child: Text("text")),
           ),
           body: TextButton(
             onPressed: () {
               log("test");
-              controller2.expand();
+              anim1.shrink();
+              anim2.expand();
             },
             child: const Text("body"),
           ),
@@ -104,8 +115,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         body: TextButton(
           onPressed: () {
             log("test");
-            controller1.expand();
-            controller2.fadeIn();
+            anim1.expand();
+            anim2.fadeIn();
           },
           child: const Text("body"),
         ),
