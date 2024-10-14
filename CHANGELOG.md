@@ -1,3 +1,7 @@
+## 0.1.1
+
+* Fixed a bug that caused the background to remain when fading out with the sheet open.
+
 ## 0.1.0
 
 * Implemented fade in/out of sheets.
