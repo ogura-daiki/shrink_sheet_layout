@@ -67,49 +67,61 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     return Scaffold(
       body: ShrinkSheetLayout(
         animation: anim1,
-        minHeight: 60,
-        thumbHeight: 200,
-        resizeThumb: true,
+        shrinkHeight: 60,
         toPadding: const EdgeInsets.only(bottom: 60),
-        thumb: Container(
-          color: Colors.grey[800],
-          child: Center(
-            child: Text(
-              "bar1",
-              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                    color: Theme.of(context).colorScheme.background,
+        contentBuilder: ShrinkSheetContentBuilder.simple(
+          thumb: ShrinkThumbConstraint.resize(
+            min: 60,
+            max: 200,
+            child: ShrinkSheetThumb(
+              child: Container(
+                color: Colors.grey[800],
+                child: Center(
+                  child: Text(
+                    "bar1",
+                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                          color: Theme.of(context).colorScheme.background,
+                        ),
                   ),
-            ),
-          ),
-        ),
-        resizeContent: false,
-        sheetContent: ShrinkSheetLayout(
-          animation: anim2,
-          thumbHeight: 60,
-          fromPadding: const EdgeInsets.only(top: 2),
-          toPadding: const EdgeInsets.all(8),
-          thumb: Container(
-            color: Colors.grey,
-            child: Center(
-              child: TextButton(
-                onPressed: () {
-                  anim2.fadeOut();
-                },
-                child: Text("bar2"),
+                ),
               ),
             ),
           ),
-          sheetContent: Container(
-            color: Colors.amber,
-            child: const Center(child: Text("text")),
-          ),
-          body: TextButton(
-            onPressed: () {
-              log("test");
-              anim1.shrink();
-              anim2.expand();
-            },
-            child: const Text("body"),
+          content: ShrinkSheetLayout(
+            animation: anim2,
+            shrinkHeight: 60,
+            fromPadding: const EdgeInsets.only(top: 2),
+            toPadding: const EdgeInsets.all(8),
+            contentBuilder: ShrinkSheetContentBuilder.simple(
+              thumb: ShrinkThumbConstraint.fixed(
+                size: 60,
+                child: ShrinkSheetThumb(
+                  child: Container(
+                    color: Colors.grey,
+                    child: Center(
+                      child: TextButton(
+                        onPressed: () {
+                          anim2.fadeOut();
+                        },
+                        child: Text("bar2"),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              content: Container(
+                color: Colors.amber,
+                child: const Center(child: Text("text")),
+              ),
+            ),
+            body: TextButton(
+              onPressed: () {
+                log("test");
+                anim1.shrink();
+                anim2.expand();
+              },
+              child: const Text("body"),
+            ),
           ),
         ),
         body: TextButton(

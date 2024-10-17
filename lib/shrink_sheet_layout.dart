@@ -7,70 +7,74 @@ import 'package:flutter/material.dart';
 import 'package:shrink_sheet_layout/shrink_sheet_controller.dart';
 export 'package:shrink_sheet_layout/shrink_sheet_controller.dart';
 
-class ShrinkSheetLayout extends StatelessWidget {
-  final double thumbHeight;
-  final Widget thumb;
-  final Widget sheetContent;
+class ShrinkSheetLayout extends StatefulWidget {
+  final ShrinkSheetContentBuilder contentBuilder;
   final Widget body;
-  final bool resizeContent;
   final EdgeInsets fromPadding;
   final EdgeInsets toPadding;
   final double shrinkHeight;
-  final bool resizeThumb;
   final double elevation;
   final ShrinkSheetController animation;
 
   const ShrinkSheetLayout({
     super.key,
-    required this.thumbHeight,
-    required this.thumb,
-    required this.sheetContent,
     required this.body,
-    this.resizeContent = true,
+    required this.contentBuilder,
     this.fromPadding = EdgeInsets.zero,
     this.toPadding = EdgeInsets.zero,
-    double? minHeight,
-    this.resizeThumb = false,
+    required this.shrinkHeight,
     this.elevation = 16,
     required this.animation,
-  }) : shrinkHeight = minHeight ?? thumbHeight;
+  });
 
-  double get _shrinkValue => animation.shrinkAnimation.value;
-  double get _fadeValue => animation.fadeInAnimation.value;
+  @override
+  State<ShrinkSheetLayout> createState() => ShrinkSheetLayoutState();
+}
+
+class ShrinkSheetLayoutState extends State<ShrinkSheetLayout>
+    implements Listenable {
+  double get _shrinkValue => widget.animation.shrinkAnimation.value;
+
+  double get _fadeValue => widget.animation.fadeInAnimation.value;
+  double _collapseHeight = 0;
 
   @override
   Widget build(BuildContext context) {
-    //直前のドラッグの移動量保管用
-    double beforeDelta = 0;
     return LayoutBuilder(builder: (context, constraints) {
-      final collapseHeight = constraints.maxHeight - shrinkHeight;
+      _collapseHeight = constraints.maxHeight -
+          widget.shrinkHeight -
+          widget.fromPadding.top -
+          widget.toPadding.bottom;
       return SizedBox(
         height: constraints.maxHeight,
         width: constraints.maxWidth,
         child: AnimatedBuilder(
-          animation: animation.shrinkAnimation,
+          animation: widget.animation.shrinkAnimation,
           builder: (context, child) {
+            final maxSheetHeight =
+                constraints.maxHeight - widget.fromPadding.vertical;
             final sheetHeight = max(
-              shrinkHeight,
+              widget.shrinkHeight,
               lerpDouble(
-                shrinkHeight,
-                constraints.maxHeight - fromPadding.vertical,
+                widget.shrinkHeight,
+                maxSheetHeight,
                 _shrinkValue,
               )!,
             );
+            __sheetHeight = sheetHeight;
             return Stack(
               fit: StackFit.passthrough,
               clipBehavior: Clip.antiAliasWithSaveLayer,
               children: [
-                body,
+                widget.body,
                 //バックドロップの制御
                 AnimatedBuilder(
-                  animation: animation.fadeInAnimation,
+                  animation: widget.animation.fadeInAnimation,
                   builder: (context, child) {
                     return Opacity(
                       opacity: _fadeValue * _shrinkValue,
                       child: IgnorePointer(
-                        ignoring: _fadeValue < 1 || animation.shrunk,
+                        ignoring: _fadeValue < 1 || widget.animation.shrunk,
                         child: child!,
                       ),
                     );
@@ -88,25 +92,27 @@ class ShrinkSheetLayout extends StatelessWidget {
                 Positioned(
                   top: lerpDouble(
                     max(
-                      toPadding.top,
-                      constraints.maxHeight - shrinkHeight - toPadding.bottom,
+                      widget.toPadding.top,
+                      constraints.maxHeight -
+                          widget.shrinkHeight -
+                          widget.toPadding.bottom,
                     ),
-                    fromPadding.top,
+                    widget.fromPadding.top,
                     _shrinkValue,
                   ),
                   height: sheetHeight,
                   left: lerpDouble(
-                    toPadding.left,
-                    fromPadding.left,
+                    widget.toPadding.left,
+                    widget.fromPadding.left,
                     _shrinkValue,
                   ),
                   right: lerpDouble(
-                    toPadding.right,
-                    fromPadding.right,
+                    widget.toPadding.right,
+                    widget.fromPadding.right,
                     _shrinkValue,
                   ),
                   child: AnimatedBuilder(
-                    animation: animation.fadeInAnimation,
+                    animation: widget.animation.fadeInAnimation,
                     builder: (context, child) {
                       return IgnorePointer(
                         ignoring: !(_fadeValue > 0.8),
@@ -117,61 +123,14 @@ class ShrinkSheetLayout extends StatelessWidget {
                       );
                     },
                     child: Material(
-                      elevation: elevation,
-                      child: Stack(
-                        fit: StackFit.passthrough,
-                        clipBehavior: Clip.antiAliasWithSaveLayer,
-                        children: [
-                          Positioned(
-                            top: thumbHeight,
-                            height: resizeContent
-                                ? sheetHeight - thumbHeight
-                                : constraints.maxHeight -
-                                    thumbHeight -
-                                    fromPadding.vertical,
-                            left: 0,
-                            right: 0,
-                            child: sheetContent,
-                          ),
-                          Positioned(
-                            top: 0,
-                            height: !resizeThumb
-                                ? thumbHeight
-                                : min(thumbHeight, sheetHeight),
-                            left: 0,
-                            right: 0,
-                            child: GestureDetector(
-                              onVerticalDragStart: (details) {
-                                beforeDelta = 0;
-                                animation.shrinkAnimation.stop();
-                              },
-                              onVerticalDragUpdate: (details) {
-                                beforeDelta = details.delta.dy;
-                                var per =
-                                    _shrinkValue - beforeDelta / collapseHeight;
-                                per = per.clamp(0, 1);
-                                animation.shrinkAnimation.baseValue = per;
-                              },
-                              onVerticalDragEnd: (details) {
-                                bool moved = beforeDelta.abs() > 2;
-                                if (!moved) {
-                                  if (_shrinkValue < 0.5) {
-                                    animation.shrink();
-                                  } else {
-                                    animation.expand();
-                                  }
-                                  return;
-                                }
-                                if (beforeDelta > 0) {
-                                  animation.shrink();
-                                } else {
-                                  animation.expand();
-                                }
-                              },
-                              child: thumb,
-                            ),
-                          ),
-                        ],
+                      elevation: widget.elevation,
+                      child: widget.contentBuilder._build(
+                        context,
+                        SheetSize(
+                          maxSize: maxSheetHeight,
+                          currentSize: sheetHeight,
+                          shrinkSize: widget.shrinkHeight,
+                        ),
                       ),
                     ),
                   ),
@@ -181,6 +140,197 @@ class ShrinkSheetLayout extends StatelessWidget {
           },
         ),
       );
+    });
+  }
+
+  double __sheetHeight = 0;
+  double get sheetHeight => __sheetHeight;
+  final Set<VoidCallback> _callbacks = {};
+  set _sheetHeight(double v) {
+    final changed = __sheetHeight != v;
+    __sheetHeight = v;
+    if (changed) {
+      for (var element in _callbacks) {
+        element.call();
+      }
+    }
+  }
+
+  @override
+  void addListener(VoidCallback listener) {
+    _callbacks.add(listener);
+  }
+
+  @override
+  void removeListener(VoidCallback listener) {
+    _callbacks.remove(listener);
+  }
+}
+
+class ShrinkSheetThumb extends StatefulWidget {
+  final Widget child;
+
+  const ShrinkSheetThumb({super.key, required this.child});
+
+  @override
+  State<ShrinkSheetThumb> createState() => _ShrinkSheetThumbState();
+}
+
+class _ShrinkSheetThumbState extends State<ShrinkSheetThumb> {
+  //直前のドラッグの移動量保管用
+  double _beforeDelta = 0;
+  @override
+  Widget build(BuildContext context) {
+    final state = context.findAncestorStateOfType<ShrinkSheetLayoutState>();
+    if (state == null) throw Error();
+    state.__sheetHeight;
+    return GestureDetector(
+      onVerticalDragStart: (details) {
+        _beforeDelta = 0;
+        state.widget.animation.shrinkAnimation.stop();
+      },
+      onVerticalDragUpdate: (details) {
+        _beforeDelta = details.delta.dy;
+        var per = state._shrinkValue - _beforeDelta / state._collapseHeight;
+        per = per.clamp(0, 1);
+        state.widget.animation.shrinkAnimation.baseValue = per;
+      },
+      onVerticalDragEnd: (details) {
+        bool moved = _beforeDelta.abs() > 2;
+        if (!moved) {
+          if (state._shrinkValue < 0.5) {
+            state.widget.animation.shrink();
+          } else {
+            state.widget.animation.expand();
+          }
+          return;
+        }
+        if (_beforeDelta > 0) {
+          state.widget.animation.shrink();
+        } else {
+          state.widget.animation.expand();
+        }
+      },
+      child: widget.child,
+    );
+  }
+}
+
+class SheetSize {
+  final double maxSize;
+  final double currentSize;
+  final double shrinkSize;
+
+  SheetSize(
+      {required this.maxSize,
+      required this.currentSize,
+      required this.shrinkSize});
+
+  SheetSize copyWith(
+      {double? maxSize, double? currentSize, double? shrinkSize}) {
+    return SheetSize(
+      maxSize: maxSize ?? this.maxSize,
+      currentSize: currentSize ?? this.currentSize,
+      shrinkSize: shrinkSize ?? this.shrinkSize,
+    );
+  }
+}
+
+class ShrinkThumbConstraint {
+  final bool resize;
+  final double min;
+  final double max;
+  final ShrinkSheetThumb child;
+
+  ShrinkThumbConstraint._(
+      {required this.resize,
+      required this.min,
+      required this.max,
+      required this.child});
+
+  factory ShrinkThumbConstraint.fixed(
+          {required double size, required ShrinkSheetThumb child}) =>
+      ShrinkThumbConstraint._(
+        resize: false,
+        min: size,
+        max: size,
+        child: child,
+      );
+  factory ShrinkThumbConstraint.resize(
+          {required double min,
+          required double max,
+          required ShrinkSheetThumb child}) =>
+      ShrinkThumbConstraint._(
+        resize: true,
+        min: min,
+        max: max,
+        child: child,
+      );
+
+  double getSize(SheetSize size) {
+    if (!resize) {
+      return max;
+    }
+    return size.currentSize.clamp(min, max);
+  }
+}
+
+class ShrinkSheetContentBuilder {
+  final Widget Function(BuildContext context, SheetSize size) _build;
+
+  ShrinkSheetContentBuilder._(
+      {required Widget Function(BuildContext, SheetSize) builder})
+      : _build = builder;
+
+  factory ShrinkSheetContentBuilder.simple(
+      {required ShrinkThumbConstraint thumb,
+      required Widget content,
+      bool resizeContent = false}) {
+    return ShrinkSheetContentBuilder._(
+      builder: (context, size) {
+        final thumbHeight = thumb.getSize(size);
+        final contentHeight =
+            (resizeContent ? size.currentSize : size.maxSize) - thumbHeight;
+        return Stack(
+          fit: StackFit.passthrough,
+          clipBehavior: Clip.antiAliasWithSaveLayer,
+          children: [
+            Positioned(
+              top: thumbHeight,
+              height: contentHeight,
+              left: 0,
+              right: 0,
+              child: content,
+            ),
+            Positioned(
+              top: 0,
+              height: thumbHeight,
+              left: 0,
+              right: 0,
+              child: thumb.child,
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  factory ShrinkSheetContentBuilder.custom(
+      Widget Function(
+              BuildContext,
+              ShrinkSheetThumb Function({Key? key, required Widget child}),
+              SheetSize)
+          builder) {
+    return ShrinkSheetContentBuilder._(builder: (context, size) {
+      bool thumbCreated = false;
+      ShrinkSheetThumb createThumb({Key? key, required Widget child}) {
+        thumbCreated = true;
+        return ShrinkSheetThumb(key: key, child: child);
+      }
+
+      final result = builder(context, createThumb, size);
+      if (!thumbCreated) throw Error();
+      return result;
     });
   }
 }
