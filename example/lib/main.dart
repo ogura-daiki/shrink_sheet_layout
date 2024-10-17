@@ -72,13 +72,13 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         contentBuilder: ShrinkSheetContentBuilder.simple(
           thumb: ShrinkThumbConstraint.resize(
             min: 60,
-            max: 200,
+            max: MediaQuery.of(context).size.width / 16 * 9,
             child: ShrinkSheetThumb(
               child: Container(
                 color: Colors.grey[800],
                 child: Center(
                   child: Text(
-                    "bar1",
+                    "VIDEO AREA",
                     style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                           color: Theme.of(context).colorScheme.background,
                         ),
