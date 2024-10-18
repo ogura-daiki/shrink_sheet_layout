@@ -34,7 +34,7 @@ class ShrinkSheetController {
       ),
       hideController: AnimationController(
         vsync: vsync,
-        duration: shrinkDuration,
+        duration: fadeInDuration,
         value: initialShow ? 1 : 0,
       ),
     );

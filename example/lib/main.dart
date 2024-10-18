@@ -41,70 +41,53 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     super.initState();
     controller1 = ShrinkSheetController.simple(
       vsync: this,
-      shrinkDuration: const Duration(milliseconds: 500),
-      fadeInDuration: const Duration(milliseconds: 300),
+      shrinkDuration: const Duration(milliseconds: 1000),
+      fadeInDuration: const Duration(milliseconds: 1000),
     );
     controller2 = ShrinkSheetController.simple(
       vsync: this,
-      shrinkDuration: const Duration(milliseconds: 1000),
-      fadeInDuration: const Duration(milliseconds: 100),
+      shrinkDuration: const Duration(milliseconds: 500),
+      fadeInDuration: const Duration(milliseconds: 500),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    const animDuration = Duration(milliseconds: 500);
-    final anim1 = ShrinkSheetController.simple(
-      vsync: this,
-      shrinkDuration: animDuration,
-      fadeInDuration: animDuration,
-    );
-    final anim2 = ShrinkSheetController.simple(
-      vsync: this,
-      shrinkDuration: animDuration,
-      fadeInDuration: animDuration,
-    );
     return Scaffold(
       body: ShrinkSheetLayout(
-        animation: anim1,
+        animation: controller1,
         shrinkHeight: 60,
         toPadding: const EdgeInsets.only(bottom: 60),
         contentBuilder: ShrinkSheetContentBuilder.simple(
-          thumb: ShrinkThumbConstraint.resize(
-            min: 60,
-            max: MediaQuery.of(context).size.width / 16 * 9,
-            child: ShrinkSheetThumb(
-              child: Container(
-                color: Colors.grey[800],
-                child: Center(
-                  child: Text(
-                    "VIDEO AREA",
-                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                          color: Theme.of(context).colorScheme.background,
-                        ),
-                  ),
+          thumbSizeCalculator: ThumbSizeCalculator.fit(
+              MediaQuery.of(context).size.width / 16 * 9),
+          thumb: ShrinkSheetThumb(
+            child: Container(
+              color: Colors.grey[800],
+              child: Center(
+                child: Text(
+                  "VIDEO AREA",
+                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                        color: Theme.of(context).colorScheme.background,
+                      ),
                 ),
               ),
             ),
           ),
           content: ShrinkSheetLayout(
-            animation: anim2,
+            animation: controller2,
             shrinkHeight: 60,
             fromPadding: const EdgeInsets.only(top: 2),
             toPadding: const EdgeInsets.all(8),
             contentBuilder: ShrinkSheetContentBuilder.simple(
-              thumb: ShrinkThumbConstraint.fixed(
-                size: 60,
-                child: ShrinkSheetThumb(
-                  child: Container(
-                    color: Colors.grey,
-                    child: Center(
-                      child: TextButton(
-                        onPressed: () {
-                          anim2.fadeOut();
-                        },
-                        child: Text("bar2"),
-                      ),
+              thumbSizeCalculator: ThumbSizeCalculator.fit(60),
+              thumb: ShrinkSheetThumb(
+                child: Container(
+                  color: Colors.grey,
+                  child: Center(
+                    child: TextButton(
+                      onPressed: controller2.fadeOut,
+                      child: Text("click here to fadeout sheet"),
                     ),
                   ),
                 ),
@@ -117,8 +100,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             body: TextButton(
               onPressed: () {
                 log("test");
-                anim1.shrink();
-                anim2.expand();
+                controller1.shrink();
+                controller2.expand();
               },
               child: const Text("body"),
             ),
@@ -127,8 +110,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         body: TextButton(
           onPressed: () {
             log("test");
-            anim1.expand();
-            anim2.fadeIn();
+            controller1.expand();
+            controller2.fadeIn();
           },
           child: const Text("body"),
         ),

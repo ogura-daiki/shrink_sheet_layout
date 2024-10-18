@@ -236,43 +236,14 @@ class SheetSize {
   }
 }
 
-class ShrinkThumbConstraint {
-  final bool resize;
-  final double min;
-  final double max;
-  final ShrinkSheetThumb child;
+class ThumbSizeCalculator {
+  final double Function(SheetSize) getSize;
 
-  ShrinkThumbConstraint._(
-      {required this.resize,
-      required this.min,
-      required this.max,
-      required this.child});
+  ThumbSizeCalculator(this.getSize);
 
-  factory ShrinkThumbConstraint.fixed(
-          {required double size, required ShrinkSheetThumb child}) =>
-      ShrinkThumbConstraint._(
-        resize: false,
-        min: size,
-        max: size,
-        child: child,
-      );
-  factory ShrinkThumbConstraint.resize(
-          {required double min,
-          required double max,
-          required ShrinkSheetThumb child}) =>
-      ShrinkThumbConstraint._(
-        resize: true,
-        min: min,
-        max: max,
-        child: child,
-      );
-
-  double getSize(SheetSize size) {
-    if (!resize) {
-      return max;
-    }
-    return size.currentSize.clamp(min, max);
-  }
+  ThumbSizeCalculator.fixed(double size) : this((_) => size);
+  ThumbSizeCalculator.fit(double maxSize)
+      : this((_) => maxSize.clamp(_.shrinkSize, _.currentSize));
 }
 
 class ShrinkSheetContentBuilder {
@@ -283,12 +254,13 @@ class ShrinkSheetContentBuilder {
       : _build = builder;
 
   factory ShrinkSheetContentBuilder.simple(
-      {required ShrinkThumbConstraint thumb,
+      {required ShrinkSheetThumb thumb,
+      required ThumbSizeCalculator thumbSizeCalculator,
       required Widget content,
       bool resizeContent = false}) {
     return ShrinkSheetContentBuilder._(
       builder: (context, size) {
-        final thumbHeight = thumb.getSize(size);
+        final thumbHeight = thumbSizeCalculator.getSize(size);
         final contentHeight =
             (resizeContent ? size.currentSize : size.maxSize) - thumbHeight;
         return Stack(
@@ -307,7 +279,7 @@ class ShrinkSheetContentBuilder {
               height: thumbHeight,
               left: 0,
               right: 0,
-              child: thumb.child,
+              child: thumb,
             ),
           ],
         );
