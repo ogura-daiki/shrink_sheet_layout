@@ -1,3 +1,7 @@
+## 0.2.0
+
+* The API has been significantly changed to allow external changes to the placement of the thumb and content.
+
 ## 0.1.1
 
 * Fixed a bug that caused the background to remain when fading out with the sheet open.
