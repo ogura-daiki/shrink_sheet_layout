@@ -1,3 +1,8 @@
+## 0.2.1
+
+* Adjustable backdrop color, transparency, and amount of change.
+* Add `paddingDodgeSheet` so that the body does not overlap the sheet.
+
 ## 0.2.0
 
 * The API has been significantly changed to allow external changes to the placement of the thumb and content.
