@@ -58,6 +58,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         animation: controller1,
         shrinkHeight: 60,
         shrinkPadding: const EdgeInsets.only(bottom: 60),
+        backdropColor: Theme.of(context).colorScheme.background,
+        backdropMaxOpacity: 1,
+        backdropOpacityFactor: 0.5,
         contentBuilder: ShrinkSheetContentBuilder.simple(
           thumbSizeCalculator: ThumbSizeCalculator.fit(
               MediaQuery.of(context).size.width / 16 * 9),

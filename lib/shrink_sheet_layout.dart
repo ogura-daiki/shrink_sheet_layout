@@ -14,6 +14,9 @@ class ShrinkSheetLayout extends StatefulWidget {
   final EdgeInsets shrinkPadding;
   final double shrinkHeight;
   final double elevation;
+  final Color backdropColor;
+  final double backdropMaxOpacity;
+  final double backdropOpacityFactor;
   final ShrinkSheetController animation;
 
   const ShrinkSheetLayout({
@@ -25,6 +28,9 @@ class ShrinkSheetLayout extends StatefulWidget {
     required this.shrinkHeight,
     this.elevation = 16,
     required this.animation,
+    this.backdropColor = Colors.black,
+    this.backdropMaxOpacity = 0.6,
+    this.backdropOpacityFactor = 1,
   });
 
   @override
@@ -72,7 +78,7 @@ class ShrinkSheetLayoutState extends State<ShrinkSheetLayout>
                   animation: widget.animation.fadeInAnimation,
                   builder: (context, child) {
                     return Opacity(
-                      opacity: _fadeValue * _shrinkValue,
+                      opacity: _fadeValue,
                       child: IgnorePointer(
                         ignoring: _fadeValue < 1 || widget.animation.shrunk,
                         child: child!,
@@ -83,9 +89,10 @@ class ShrinkSheetLayoutState extends State<ShrinkSheetLayout>
                     width: constraints.maxWidth,
                     height: constraints.maxHeight,
                     color: Color.lerp(
-                      const Color(0x00000000),
-                      const Color(0x99000000),
-                      _shrinkValue,
+                      widget.backdropColor.withOpacity(0),
+                      widget.backdropColor
+                          .withOpacity(widget.backdropMaxOpacity),
+                      min(1, _shrinkValue / widget.backdropOpacityFactor),
                     ),
                   ),
                 ),
