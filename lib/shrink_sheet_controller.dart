@@ -48,4 +48,6 @@ class ShrinkSheetController {
 
   bool get expanded => shrinkAnimation.value == 1;
   bool get shrunk => shrinkAnimation.value == 0;
+  bool get hidden => fadeInAnimation.value == 0;
+  bool get shown => fadeInAnimation.value == 1;
 }

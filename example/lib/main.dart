@@ -61,6 +61,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         backdropColor: Theme.of(context).colorScheme.background,
         backdropMaxOpacity: 1,
         backdropOpacityFactor: 0.5,
+        paddingDodgeSheet: 0,
         contentBuilder: ShrinkSheetContentBuilder.simple(
           thumbSizeCalculator: ThumbSizeCalculator.fit(
               MediaQuery.of(context).size.width / 16 * 9),

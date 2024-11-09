@@ -17,6 +17,7 @@ class ShrinkSheetLayout extends StatefulWidget {
   final Color backdropColor;
   final double backdropMaxOpacity;
   final double backdropOpacityFactor;
+  final double? paddingDodgeSheet;
   final ShrinkSheetController animation;
 
   const ShrinkSheetLayout({
@@ -31,6 +32,7 @@ class ShrinkSheetLayout extends StatefulWidget {
     this.backdropColor = Colors.black,
     this.backdropMaxOpacity = 0.6,
     this.backdropOpacityFactor = 1,
+    this.paddingDodgeSheet,
   });
 
   @override
@@ -43,6 +45,13 @@ class ShrinkSheetLayoutState extends State<ShrinkSheetLayout>
 
   double get _fadeValue => widget.animation.fadeInAnimation.value;
   double _collapseHeight = 0;
+
+  double get paddingDodgeSheet {
+    if (widget.paddingDodgeSheet != null) {
+      return widget.paddingDodgeSheet!;
+    }
+    return widget.shrinkHeight + widget.shrinkPadding.bottom;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +81,18 @@ class ShrinkSheetLayoutState extends State<ShrinkSheetLayout>
               fit: StackFit.passthrough,
               clipBehavior: Clip.antiAliasWithSaveLayer,
               children: [
-                widget.body,
+                AnimatedBuilder(
+                  animation: widget.animation.fadeInAnimation,
+                  builder: (context, child) {
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        bottom: _fadeValue * paddingDodgeSheet,
+                      ),
+                      child: child!,
+                    );
+                  },
+                  child: widget.body,
+                ),
                 //バックドロップの制御
                 AnimatedBuilder(
                   animation: widget.animation.fadeInAnimation,
