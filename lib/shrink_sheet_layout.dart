@@ -10,8 +10,8 @@ export 'package:shrink_sheet_layout/shrink_sheet_controller.dart';
 class ShrinkSheetLayout extends StatefulWidget {
   final ShrinkSheetContentBuilder contentBuilder;
   final Widget body;
-  final EdgeInsets fromPadding;
-  final EdgeInsets toPadding;
+  final EdgeInsets expandPadding;
+  final EdgeInsets shrinkPadding;
   final double shrinkHeight;
   final double elevation;
   final ShrinkSheetController animation;
@@ -20,8 +20,8 @@ class ShrinkSheetLayout extends StatefulWidget {
     super.key,
     required this.body,
     required this.contentBuilder,
-    this.fromPadding = EdgeInsets.zero,
-    this.toPadding = EdgeInsets.zero,
+    this.expandPadding = EdgeInsets.zero,
+    this.shrinkPadding = EdgeInsets.zero,
     required this.shrinkHeight,
     this.elevation = 16,
     required this.animation,
@@ -43,8 +43,8 @@ class ShrinkSheetLayoutState extends State<ShrinkSheetLayout>
     return LayoutBuilder(builder: (context, constraints) {
       _collapseHeight = constraints.maxHeight -
           widget.shrinkHeight -
-          widget.fromPadding.top -
-          widget.toPadding.bottom;
+          widget.expandPadding.top -
+          widget.shrinkPadding.bottom;
       return SizedBox(
         height: constraints.maxHeight,
         width: constraints.maxWidth,
@@ -52,7 +52,7 @@ class ShrinkSheetLayoutState extends State<ShrinkSheetLayout>
           animation: widget.animation.shrinkAnimation,
           builder: (context, child) {
             final maxSheetHeight =
-                constraints.maxHeight - widget.fromPadding.vertical;
+                constraints.maxHeight - widget.expandPadding.vertical;
             final sheetHeight = max(
               widget.shrinkHeight,
               lerpDouble(
@@ -61,7 +61,7 @@ class ShrinkSheetLayoutState extends State<ShrinkSheetLayout>
                 _shrinkValue,
               )!,
             );
-            __sheetHeight = sheetHeight;
+            _sheetHeight = sheetHeight;
             return Stack(
               fit: StackFit.passthrough,
               clipBehavior: Clip.antiAliasWithSaveLayer,
@@ -92,23 +92,23 @@ class ShrinkSheetLayoutState extends State<ShrinkSheetLayout>
                 Positioned(
                   top: lerpDouble(
                     max(
-                      widget.toPadding.top,
+                      widget.shrinkPadding.top,
                       constraints.maxHeight -
                           widget.shrinkHeight -
-                          widget.toPadding.bottom,
+                          widget.shrinkPadding.bottom,
                     ),
-                    widget.fromPadding.top,
+                    widget.expandPadding.top,
                     _shrinkValue,
                   ),
                   height: sheetHeight,
                   left: lerpDouble(
-                    widget.toPadding.left,
-                    widget.fromPadding.left,
+                    widget.shrinkPadding.left,
+                    widget.expandPadding.left,
                     _shrinkValue,
                   ),
                   right: lerpDouble(
-                    widget.toPadding.right,
-                    widget.fromPadding.right,
+                    widget.shrinkPadding.right,
+                    widget.expandPadding.right,
                     _shrinkValue,
                   ),
                   child: AnimatedBuilder(

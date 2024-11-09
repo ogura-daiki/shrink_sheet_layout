@@ -57,7 +57,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       body: ShrinkSheetLayout(
         animation: controller1,
         shrinkHeight: 60,
-        toPadding: const EdgeInsets.only(bottom: 60),
+        shrinkPadding: const EdgeInsets.only(bottom: 60),
         contentBuilder: ShrinkSheetContentBuilder.simple(
           thumbSizeCalculator: ThumbSizeCalculator.fit(
               MediaQuery.of(context).size.width / 16 * 9),
@@ -77,8 +77,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           content: ShrinkSheetLayout(
             animation: controller2,
             shrinkHeight: 60,
-            fromPadding: const EdgeInsets.only(top: 2),
-            toPadding: const EdgeInsets.all(8),
+            expandPadding: const EdgeInsets.only(top: 2),
+            shrinkPadding: const EdgeInsets.all(8),
             contentBuilder: ShrinkSheetContentBuilder.simple(
               thumbSizeCalculator: ThumbSizeCalculator.fit(60),
               thumb: ShrinkSheetThumb(
