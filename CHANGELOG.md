@@ -1,3 +1,7 @@
+## 0.2.2
+
+* Fixed HitTest for ShrinkSheetThumb.
+
 ## 0.2.1
 
 * Adjustable backdrop color, transparency, and amount of change.

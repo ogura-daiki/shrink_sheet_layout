@@ -1,6 +1,6 @@
 name: shrink_sheet_layout
 description: "This is a draggable bottom sheet plugin, like the one in the app version of Youtube."
-version: 0.2.1
+version: 0.2.2
 homepage: https://github.com/ogura-daiki/shrink_sheet_layout
 
 

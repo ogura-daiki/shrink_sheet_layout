@@ -11,7 +11,7 @@ and the Flutter guide for
 [developing packages and plugins](https://flutter.dev/developing-packages).
 
 リリース用コマンド
-dart pub publish --dry-run
+fvm flutter pub publish --dry-run
 
 -->
 
