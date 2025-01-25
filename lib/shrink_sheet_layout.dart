@@ -212,6 +212,7 @@ class _ShrinkSheetThumbState extends State<ShrinkSheetThumb> {
     if (state == null) throw Error();
     state.__sheetHeight;
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onVerticalDragStart: (details) {
         _beforeDelta = 0;
         state.widget.animation.shrinkAnimation.stop();
