@@ -18,6 +18,7 @@ class ShrinkSheetLayout extends StatefulWidget {
   final double backdropMaxOpacity;
   final double backdropOpacityFactor;
   final double? paddingDodgeSheet;
+  final double minPaddingDodgeSheet;
   final ShrinkSheetController animation;
 
   const ShrinkSheetLayout({
@@ -33,6 +34,7 @@ class ShrinkSheetLayout extends StatefulWidget {
     this.backdropMaxOpacity = 0.6,
     this.backdropOpacityFactor = 1,
     this.paddingDodgeSheet,
+    this.minPaddingDodgeSheet = 0,
   });
 
   @override
@@ -46,11 +48,14 @@ class ShrinkSheetLayoutState extends State<ShrinkSheetLayout>
   double get _fadeValue => widget.animation.fadeInAnimation.value;
   double _collapseHeight = 0;
 
-  double get paddingDodgeSheet {
+  double paddingDodgeSheet(double mix) {
+    late double dodge;
     if (widget.paddingDodgeSheet != null) {
-      return widget.paddingDodgeSheet!;
+      dodge = widget.paddingDodgeSheet!;
+    } else {
+      dodge = widget.shrinkHeight + widget.shrinkPadding.bottom;
     }
-    return widget.shrinkHeight + widget.shrinkPadding.bottom;
+    return lerpDouble(widget.minPaddingDodgeSheet, dodge, mix)!;
   }
 
   @override
@@ -86,7 +91,7 @@ class ShrinkSheetLayoutState extends State<ShrinkSheetLayout>
                   builder: (context, child) {
                     return Padding(
                       padding: EdgeInsets.only(
-                        bottom: _fadeValue * paddingDodgeSheet,
+                        bottom: paddingDodgeSheet(_fadeValue),
                       ),
                       child: child!,
                     );
