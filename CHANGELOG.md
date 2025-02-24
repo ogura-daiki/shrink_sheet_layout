@@ -1,3 +1,8 @@
+## 0.2.3
+
+* Add `minPaddingDodgeSheet` so that the body does not overlap the bottom padding on fade out.
+* Update example.
+
 ## 0.2.2
 
 * Fixed HitTest for ShrinkSheetThumb.
